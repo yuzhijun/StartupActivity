@@ -21,22 +21,16 @@ public class CardLayout extends ViewGroup {
     private int verticalSpace;
 
     public CardLayout(Context context) {
-        super(context);
-        init(context, null);
+        this(context,null);
     }
 
     public CardLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+        this(context, attrs,0);
     }
 
     public CardLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context, attrs);
-    }
-
-    private void init(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CardLayout);
+        TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.CardLayout);
         horizontalSpace = a.getDimensionPixelOffset(R.styleable.CardLayout_horizontal_space,DEFAULT_HORIZONTAL_SPACE);
         verticalSpace = a.getDimensionPixelOffset(R.styleable.CardLayout_vertical_space,DEFAULT_VERTICAL_PACE);
         a.recycle();
@@ -55,15 +49,19 @@ public class CardLayout extends ViewGroup {
         for (int i = 0; i < getChildCount();i++){
             final View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
-                LayoutParams lp = child.getLayoutParams();
+                CustomLayoutParams lp = (CustomLayoutParams) child.getLayoutParams();
 
-                int childWidthSpec = getChildMeasureSpec(widthMeasureSpec,child.getPaddingLeft() + child.getPaddingRight() ,lp.width);
+                int childWidthSpec = getChildMeasureSpec(widthMeasureSpec,child.getPaddingLeft() + child.getPaddingRight(),lp.width);
                 int childHeightSpec = getChildMeasureSpec(heightMeasureSpec,child.getPaddingTop() + child.getPaddingBottom(),lp.height);
 
                 child.measure(childWidthSpec,childHeightSpec);
 
                 width = Math.max(width,i * horizontalSpace + child.getMeasuredWidth());
-                height = Math.max(height,i * verticalSpace + child.getMeasuredHeight());
+                if (lp.verSpacing != -1 && i >= 1){
+                    height = Math.max(height,lp.verSpacing + (i-1)*verticalSpace + child.getMeasuredHeight());
+                }else{
+                    height = Math.max(height,i * verticalSpace + child.getMeasuredHeight());
+                }
             }
         }
 
@@ -77,12 +75,55 @@ public class CardLayout extends ViewGroup {
             for (int i = 0;i < getChildCount();i++){
                 final View child = getChildAt(i);
                 if (child.getVisibility() != GONE) {
+                    CustomLayoutParams lp = (CustomLayoutParams) child.getLayoutParams();
                     int leftSpace = horizontalSpace * i;
                     int topSpace = verticalSpace * i;
+                    if (lp.verSpacing != -1 && i >= 1){
+                        topSpace = lp.verSpacing + (i-1)*verticalSpace;
+                    }
 
                     child.layout(leftSpace,topSpace,leftSpace + child.getMeasuredWidth(),topSpace + child.getMeasuredHeight());
                 }
             }
+        }
+    }
+
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new CustomLayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+    }
+
+    @Override
+    public LayoutParams generateLayoutParams(AttributeSet attrs) {
+        return new CustomLayoutParams(getContext(),attrs);
+    }
+
+    @Override
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
+        return new CustomLayoutParams(p.width,p.height);
+    }
+
+    @Override
+    protected boolean checkLayoutParams(LayoutParams p) {
+        return p instanceof CustomLayoutParams;
+    }
+
+    public static class CustomLayoutParams extends ViewGroup.LayoutParams{
+        private int verSpacing;
+
+        public CustomLayoutParams(Context context, AttributeSet attrs) {
+            super(context, attrs);
+
+            TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.CardLayout_LayoutParams);
+             try {
+                 verSpacing = a.getDimensionPixelSize(R.styleable.CardLayout_vertical_space,-1);
+            } finally {
+                a.recycle();
+            }
+        }
+
+        public CustomLayoutParams(int width, int height) {
+            super(width, height);
         }
     }
 }

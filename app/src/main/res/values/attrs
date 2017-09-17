@@ -4,4 +4,8 @@
         <attr name="horizontal_space" format="dimension"></attr>
         <attr name="vertical_space" format="dimension"></attr>
     </declare-styleable>
+
+    <declare-styleable name="CardLayout_LayoutParams">  
+        <attr name="vertical_spacing" format="dimension"/>  
+    </declare-styleable>
 </resources>

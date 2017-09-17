@@ -23,6 +23,7 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:text="第二张卡牌"
+        app:vertical_spacing="100dp"
         android:padding="25dp"
         android:background="@color/colorAccent"/>
 
